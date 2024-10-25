@@ -1,3 +1,4 @@
+import hashlib
 import neo4j
 import json
 
@@ -45,25 +46,26 @@ class Neo4jUtils:
         
         query = """
         MATCH (u:User)-[r]->(related)
-        WHERE u.predictedProbability > 0.8
+        WHERE u.predictedProbability > 0.9
         RETURN 
             collect(DISTINCT{
-                id: u.guid, 
+                id: id(u), 
                 ip: CASE WHEN EXISTS((u)-[:HAS_IP]->(:IP)) THEN [(u)-[:HAS_IP]->(ip:IP) | ip.guid][0] ELSE null END,
                 location: CASE WHEN EXISTS((u)-[:HAS_CC]->(:Card)) THEN [(u)-[:HAS_CC]->(card:Card) | card.level][0] ELSE null END,
                 risk_level: u.fraudMoneyTransfer
             }) AS nodes,
             collect(DISTINCT{
                 id: id(r), 
-                from: startNode(r).guid, 
-                to: endNode(r).guid, 
+                from: id(startNode(r)), 
+                to: id(endNode(r)), 
                 name: type(r)
             }) AS relationships
     """
-        
+            
         with self.driver.session(database="db3") as session:
             result = session.run(query)
             data = result.single()
+            print (data)
             
             formatted_data = {
                 "nodes": data["nodes"],
@@ -71,6 +73,6 @@ class Neo4jUtils:
             }
             
         # driver.close()
-        with open('test-dataaa.json', "w") as file:
-            json.dump(formatted_data, file)
-        return data
+            with open('test-dataaa-num.json', "w") as file:
+                json.dump(formatted_data, file)
+            return formatted_data
