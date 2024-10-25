@@ -16,10 +16,16 @@ class Neo4jUtils:
             return [record for record in result]
 
         
-    def filter_fraudlent_user(self):
+    def filter_fraudlent_users(self):
         """
         Filter fraudlent users.
         Return a list of records
+
+        Args:
+        None
+
+        Returns:
+        records:list A list of user records
         """
         query = """
                 MATCH (u:User) where u.fraudMoneyTransfer=1 return u LIMIT 100;
@@ -27,3 +33,9 @@ class Neo4jUtils:
         with self.driver.session(database="db2") as session:
             result = session.run(query)
             return [record for record in result]
+    
+    def filter_fraudlent_user_given_user_id(self,user_id:int):
+        """
+        
+        """
+        pass
