@@ -1,0 +1,5 @@
+== Common folder
+
+This folder contains all code that is required as classes!
+
+
