@@ -19,7 +19,7 @@ def index(methods=['GET','POST']):
     return 'Web App with Python Flask!'
 
 @app.route('/llm')
-def llm():
+def llm(methods=['GET','POST']):
     """
     Talk with your data! We want the user to be able to speak to their data, and it speak back.
     """

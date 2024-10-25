@@ -29,7 +29,18 @@ class Neo4jUtils:
         """
         with self.driver.session(database="db3") as session:
             result = session.run(query)
-            return [record for record in result]
+            data = result.single()
+            print (data)
+            
+            formatted_data = {
+                "nodes": data.get("nodes",[]),
+                "relationships": data.get("relationships",[])
+            }
+            
+        # driver.close()
+            with open('test-dataaa-num.json', "w") as file:
+                json.dump(formatted_data, file)
+            return formatted_data
 
         
     def filter_fraudlent_users(self):

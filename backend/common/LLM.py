@@ -6,11 +6,29 @@ class LLMs:
 """
 
     def generate_cipher_query(self, user_prompt:str):
-        if len(code) > 200:
+        if len(user_prompt) > 200:
             return "code length exceeded"
         else:
             # create a chat completion
             openai.api_key = ""
-            chat_completion = openai.ChatCompletion.create(model="gpt-4", messages=[{"role": "user", "content": f"You are a neo4j expert. You are only to return cipher queries, without any explanation on the queries you return as your query will be passed directly to neo4j for execution. You are not allowed to delete or edit the database under any circumstance. The following is the schema of the database {self.schema} Please generate a single cipher query to {user_prompt}"}])
+            collection = "collect(DISTINCT{id: id(u), ip: CASE WHEN EXISTS((u)-[:HAS_IP]->(:IP)) THEN [(u)-[:HAS_IP]->(ip:IP) | ip.guid][0] ELSE null END,location: CASE WHEN EXISTS((u)-[:HAS_CC]->(:Card)) THEN [(u)-[:HAS_CC]->(card:Card) | card.level][0] ELSE null END,risk_level: u.fraudMoneyTransfer}) AS nodes,collect(DISTINCT{id: id(r), from: id(startNode(r)), to: id(endNode(r)), name: type(r)}) AS relationships"
+            print(f"You are a neo4j expert. You are only to return cipher queries, without any explanation on the queries you return as your query will be passed directly to neo4j for execution. You are not allowed to delete or edit the database under any circumstance. Please use the following collections at the end of the query  {collection}. The following is the schema of the database {self.schema} Please generate a single cipher query to {user_prompt}")
+            chat_completion = openai.ChatCompletion.create(model="gpt-4", messages=[{"role": "user", "content": f"You are a neo4j expert. You are only to return cipher queries, without any explanation on the queries you return as your query will be passed directly to neo4j for execution. You are not allowed to delete or edit the database under any circumstance. Please use the following collections at the end of the query  {collection}. The following is the schema of the database {self.schema} Please generate a single cipher query to {user_prompt}"}])
             print(chat_completion)
-        return chat_completion.choices[0].message.content
+
+            completion = openai.ChatCompletion.create(
+    model="gpt-4-turbo",  # Assuming "gpt-4-turbo" is the correct model
+    messages=[
+        {
+            "role": "user",
+            "content": (
+                f"You are a neo4j expert. You are only to return cipher queries, without any explanation on the "
+                f"queries you return as your query will be passed directly to neo4j for execution. You are not allowed "
+                f"to delete or edit the database under any circumstance. Please use the following collections at the end "
+                f"of the query {collection}. The following is the schema of the database {self.schema}. "
+                f"Please generate a single cipher query to {user_prompt}"
+            )
+        }
+    ]
+)
+        return chat_completion.choices[0].message.content.strip('\n')
