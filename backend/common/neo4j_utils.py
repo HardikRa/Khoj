@@ -17,6 +17,20 @@ class Neo4jUtils:
             result = session.run(query)
             return [record for record in result]
 
+    def execute_neo4j_query(self,query:str):
+        """
+        Accept a cipher query and run it. Return the response
+
+        Args:
+        query:str   The neo4j argument that needs to be run
+
+        Returns:
+        records:list   A list of records that are returned from the query
+        """
+        with self.driver.session(database="db3") as session:
+            result = session.run(query)
+            return [record for record in result]
+
         
     def filter_fraudlent_users(self):
         """
