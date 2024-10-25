@@ -60,14 +60,20 @@ class Neo4jUtils:
         
         query = """
         MATCH (u:User)-[r]->(related)
-        WHERE u.predictedProbability > 0.9
+        WHERE u.predictedProbability > 0.8
         RETURN 
             collect(DISTINCT{
                 id: id(u), 
                 ip: CASE WHEN EXISTS((u)-[:HAS_IP]->(:IP)) THEN [(u)-[:HAS_IP]->(ip:IP) | ip.guid][0] ELSE null END,
                 location: CASE WHEN EXISTS((u)-[:HAS_CC]->(:Card)) THEN [(u)-[:HAS_CC]->(card:Card) | card.level][0] ELSE null END,
                 risk_level: u.fraudMoneyTransfer
-            }) AS nodes,
+            }) + 
+        collect(DISTINCT{
+            id: id(related),
+            ip: CASE WHEN EXISTS((related)-[:HAS_IP]->(:IP)) THEN [(related)-[:HAS_IP]->(ip:IP) | ip.guid][0] ELSE null END,
+            location: CASE WHEN EXISTS((related)-[:HAS_CC]->(:Card)) THEN [(related)-[:HAS_CC]->(card:Card) | card.level][0] ELSE null END,
+            risk_level: related.fraudMoneyTransfer
+        }) AS nodes,
             collect(DISTINCT{
                 id: id(r), 
                 from: id(startNode(r)), 
