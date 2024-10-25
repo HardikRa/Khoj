@@ -43,22 +43,23 @@ class Neo4jUtils:
     def get_data(self):
         
         query = """
-        MATCH (n)-[r]->(m) where n.predictedProbability > 0.8 LIMIT 300
+        MATCH (u:User)-[r]->(related)
+        WHERE u.predictedProbability > 0.8 LIMIT 20
         RETURN 
-            collect({ 
-                id: id(n), 
-                guid: coalesce(n.guid, ''), 
-                moneyTransferErrorCancelAmount: coalesce(n.moneyTransferErrorCancelAmount, 0.0), 
-                fraudMoneyTransfer: coalesce(n.fraudMoneyTransfer, 0) 
+            collect({
+                id: u.guid, 
+                name: u.guid,
+                ip: CASE WHEN EXISTS((u)-[:HAS_IP]->(:IP)) THEN [(u)-[:HAS_IP]->(ip:IP) | ip.guid][0] ELSE null END,
+                location: CASE WHEN EXISTS((u)-[:HAS_CC]->(:Card)) THEN [(u)-[:HAS_CC]->(card:Card) | card.level][0] ELSE null END,
+                risk_level: u.fraudMoneyTransfer
             }) AS nodes,
-            
-            collect({ 
+            collect({
                 id: id(r), 
-                from: id(startNode(r)), 
-                to: id(endNode(r)), 
+                from: startNode(r).guid, 
+                to: endNode(r).guid, 
                 name: type(r)
             }) AS relationships
-        """
+    """
         
         with self.driver.session(database="db3") as session:
             result = session.run(query)
