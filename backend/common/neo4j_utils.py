@@ -1,4 +1,5 @@
 import neo4j
+import json
 
 class Neo4jUtils:
     def __init__(self,username:str,password:str,uri:str):
@@ -44,16 +45,15 @@ class Neo4jUtils:
         
         query = """
         MATCH (u:User)-[r]->(related)
-        WHERE u.predictedProbability > 0.8 LIMIT 20
+        WHERE u.predictedProbability > 0.8
         RETURN 
-            collect({
+            collect(DISTINCT{
                 id: u.guid, 
-                name: u.guid,
                 ip: CASE WHEN EXISTS((u)-[:HAS_IP]->(:IP)) THEN [(u)-[:HAS_IP]->(ip:IP) | ip.guid][0] ELSE null END,
                 location: CASE WHEN EXISTS((u)-[:HAS_CC]->(:Card)) THEN [(u)-[:HAS_CC]->(card:Card) | card.level][0] ELSE null END,
                 risk_level: u.fraudMoneyTransfer
             }) AS nodes,
-            collect({
+            collect(DISTINCT{
                 id: id(r), 
                 from: startNode(r).guid, 
                 to: endNode(r).guid, 
@@ -71,5 +71,6 @@ class Neo4jUtils:
             }
             
         # driver.close()
-        print(formatted_data)
-        return formatted_data
+        with open('test-dataaa.json', "w") as file:
+            json.dump(formatted_data, file)
+        return data
