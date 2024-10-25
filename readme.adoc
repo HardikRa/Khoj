@@ -1,3 +1,11 @@
 = Khoj
 
+image::assets/logo.png[]
 
+A tool for combating financial fraud.
+
+NOTE: This tool was built for the purposes of a hackathon in 24 hours and is therefore, an MVP. 
+
+== Problem Statement
+
+AI is getting better and better at impersonation and fraud. How do we keep people safe?
