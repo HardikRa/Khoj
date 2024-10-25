@@ -11,7 +11,7 @@ class Neo4jUtils:
         query = """
         MATCH (n) RETURN n LIMIT 100;
         """
-        with self.driver.session(database="db2") as session:
+        with self.driver.session(database="db3") as session:
             result = session.run(query)
             return [record for record in result]
 
@@ -30,7 +30,7 @@ class Neo4jUtils:
         query = """
                 MATCH (u:User) where u.fraudMoneyTransfer=1 return u LIMIT 100;
         """
-        with self.driver.session(database="db2") as session:
+        with self.driver.session(database="db3") as session:
             result = session.run(query)
             return [record for record in result]
     
@@ -39,3 +39,36 @@ class Neo4jUtils:
         
         """
         pass
+
+    def get_data(self):
+        
+        query = """
+        MATCH (n)-[r]->(m) where n.predictedProbability > 0.8 LIMIT 300
+        RETURN 
+            collect({ 
+                id: id(n), 
+                guid: coalesce(n.guid, ''), 
+                moneyTransferErrorCancelAmount: coalesce(n.moneyTransferErrorCancelAmount, 0.0), 
+                fraudMoneyTransfer: coalesce(n.fraudMoneyTransfer, 0) 
+            }) AS nodes,
+            
+            collect({ 
+                id: id(r), 
+                from: id(startNode(r)), 
+                to: id(endNode(r)), 
+                name: type(r)
+            }) AS relationships
+        """
+        
+        with self.driver.session(database="db3") as session:
+            result = session.run(query)
+            data = result.single()
+            
+            formatted_data = {
+                "nodes": data["nodes"],
+                "relationships": data["relationships"]
+            }
+            
+        # driver.close()
+        print(formatted_data)
+        return formatted_data
