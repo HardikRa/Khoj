@@ -9,3 +9,12 @@ NOTE: This tool was built for the purposes of a hackathon in 24 hours and is the
 == Problem Statement
 
 AI is getting better and better at impersonation and fraud. How do we keep people safe?
+
+== Solution
+
+
+== Ending
+
+We are sure we have missed something :)
+
+Got a feature you would like to see here? Or got a question you would like answered? Raise an issue, or reach out to us directly :) 
