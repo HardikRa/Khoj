@@ -35,10 +35,12 @@ def llm(methods=['GET','POST']):
 
 @app.route('/potentially_frauded_and_related')
 def okay():
-    neo4jUtils.get_data()
-    return 'okay something'
-# @app.route('/potentially_fraudulent_users')
-# def 
+    return neo4jUtils.get_fraudlent_data()
+
+
+@app.route('/communities')
+def communities():
+    return neo4jUtils.get_disconnected_wcc_groups()
 
 if __name__=='__main__':
     app.run(host='0.0.0.0', port=8000, debug=True)

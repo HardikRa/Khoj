@@ -75,13 +75,13 @@ class Neo4jUtils:
                 id: id(u), 
                 ip: CASE WHEN EXISTS((u)-[:HAS_IP]->(:IP)) THEN [(u)-[:HAS_IP]->(ip:IP) | ip.guid][0] ELSE null END,
                 location: CASE WHEN EXISTS((u)-[:HAS_CC]->(:Card)) THEN [(u)-[:HAS_CC]->(card:Card) | card.level][0] ELSE null END,
-                risk_level: u.fraudMoneyTransfer
+                risk_factor: u.predictedProbability
             }) + 
         collect(DISTINCT{
             id: id(related),
             ip: CASE WHEN EXISTS((related)-[:HAS_IP]->(:IP)) THEN [(related)-[:HAS_IP]->(ip:IP) | ip.guid][0] ELSE null END,
             location: CASE WHEN EXISTS((related)-[:HAS_CC]->(:Card)) THEN [(related)-[:HAS_CC]->(card:Card) | card.level][0] ELSE null END,
-            risk_level: related.fraudMoneyTransfer
+            risk_factor: related.predictedProbability
         }) AS nodes,
             collect(DISTINCT{
                 id: id(r), 
@@ -101,5 +101,43 @@ class Neo4jUtils:
                 "relationships": data["relationships"]
             }
             
+            with open('test-dataaa-nums.json', "w") as file:
+                json.dump(formatted_data, file)
         # driver.close()
             return formatted_data
+        
+
+    def get_disconnected_wcc_groups(self):
+        query = """
+        MATCH (u:User)
+        WITH u.wccId AS wccId, collect(u) AS users
+        ORDER BY size(users) DESC
+        LIMIT 500
+        OPTIONAL MATCH (u1:User {wccId: wccId})-[r]->(u2:User)
+        WHERE u1.wccId <> u2.wccId
+        WITH wccId, users, count(r) AS external_links
+        WHERE external_links = 0
+        RETURN wccId, [user IN users | {
+            id: id(user),
+            moneyTransferErrorCancelAmount: user.moneyTransferErrorCancelAmount,
+            fraudMoneyTransfer: user.fraudMoneyTransfer
+        }] AS users
+        """
+        formatted_data  ={"users":[]}
+        with self.driver.session(database="db3") as session:
+            result = session.run(query)
+            data= [record for record in result]
+            for datum in data:
+                formatted_data["users"].append(datum["users"])
+                print(datum["users"])
+            # print(data["users"])
+            
+            # formatted_data = {
+            #     "users": data["users"]}
+            #     "relationships": data["relationships"]
+            # }
+            with open('test-dataaa-groups.json', "w") as file:
+                json.dump(formatted_data, file)
+            
+            # driver.close()
+        return formatted_data
