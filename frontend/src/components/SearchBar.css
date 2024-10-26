@@ -1,0 +1,68 @@
+/* src/components/SearchBar.css */
+
+.search-bar-container {
+    display: flex;
+    align-items: center;
+    background-color: white;
+    /* Light theme background */
+    border-radius: 25px;
+    /* Rounded corners */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    /* Shadow effect */
+    overflow: hidden;
+    /* Prevents child elements from exceeding rounded corners */
+    /* max-width: 600px; */
+    /* Set maximum width */
+    /* width: 100%; */
+    /* Allow full width but respect max-width */
+    margin: 32px;
+}
+
+.search-input {
+    flex: 1;
+    /* Allow input to take up remaining space */
+    padding: 10px 15px;
+    /* Padding for the input */
+    border: none;
+    /* Remove border */
+    outline: none;
+    /* Remove outline on focus */
+    font-size: 16px;
+    /* Font size */
+    border-radius: 25px 0 0 25px;
+    /* Rounded corners for the left side */
+}
+
+.search-button {
+    padding: 10px 16px 10px 14px;
+    /* Adjust padding for the button */
+    border: #007bff;
+    /* Remove border */
+    background-color: #007bff;
+    /* Button color */
+    color: white;
+    /* Text color */
+    font-size: 16px;
+    /* Font size */
+    border-radius: 0 25px 25px 0;
+    /* Rounded corners for the right side */
+    cursor: pointer;
+    /* Pointer cursor on hover */
+    transition: background-color 0.3s;
+    /* Transition effect for background color */
+    display: flex;
+    /* Use flex to center the icon */
+    align-items: center;
+    /* Center icon vertically */
+    justify-content: center;
+    /* Center icon horizontally */
+    height: 100%;
+}
+
+
+/* Change button color on hover */
+
+.search-button:hover {
+    background-color: #0056b3;
+    /* Darker shade on hover */
+}
