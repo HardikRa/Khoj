@@ -71,24 +71,26 @@ class Neo4jUtils:
         MATCH (u:User)-[r]->(related)
         WHERE u.predictedProbability > 0.8 LIMIT 100
         RETURN 
-            collect(DISTINCT{
-                id: id(u), 
-                ip: CASE WHEN EXISTS((u)-[:HAS_IP]->(:IP)) THEN [(u)-[:HAS_IP]->(ip:IP) | ip.guid][0] ELSE null END,
-                location: CASE WHEN EXISTS((u)-[:HAS_CC]->(:Card)) THEN [(u)-[:HAS_CC]->(card:Card) | card.level][0] ELSE null END,
-                risk_factor: u.predictedProbability
-            }) + 
-        collect(DISTINCT{
-            id: id(related),
-            ip: CASE WHEN EXISTS((related)-[:HAS_IP]->(:IP)) THEN [(related)-[:HAS_IP]->(ip:IP) | ip.guid][0] ELSE null END,
-            location: CASE WHEN EXISTS((related)-[:HAS_CC]->(:Card)) THEN [(related)-[:HAS_CC]->(card:Card) | card.level][0] ELSE null END,
-            risk_factor: related.predictedProbability
-        }) AS nodes,
-            collect(DISTINCT{
-                id: id(r), 
-                from: id(startNode(r)), 
-                to: id(endNode(r)), 
-                name: type(r)
-            }) AS relationships
+    collect(DISTINCT {
+        id: id(u), 
+        type: labels(u)[0],
+        ip: CASE WHEN EXISTS((u)-[:HAS_IP]->(:IP)) THEN [(u)-[:HAS_IP]->(ip:IP) | ip.guid][0] ELSE null END,
+        location: CASE WHEN EXISTS((u)-[:HAS_CC]->(:Card)) THEN [(u)-[:HAS_CC]->(card:Card) | card.level][0] ELSE null END,
+        risk_factor: u.predictedProbability
+    }) + 
+    collect(DISTINCT {
+        id: id(related),
+        type: labels(related)[0],
+        ip: CASE WHEN EXISTS((related)-[:HAS_IP]->(:IP)) THEN [(related)-[:HAS_IP]->(ip:IP) | ip.guid][0] ELSE null END,
+        location: CASE WHEN EXISTS((related)-[:HAS_CC]->(:Card)) THEN [(related)-[:HAS_CC]->(card:Card) | card.level][0] ELSE null END,
+        risk_factor: related.predictedProbability
+    }) AS nodes,
+    collect(DISTINCT {
+        id: id(r), 
+        from: id(startNode(r)), 
+        to: id(endNode(r)), 
+        name: type(r)
+    }) AS relationships
     """
             
         with self.driver.session(database="db3") as session:
@@ -105,7 +107,54 @@ class Neo4jUtils:
                 json.dump(formatted_data, file)
         # driver.close()
             return formatted_data
-        
+
+
+    def get_all_user_data(self):
+        """
+        Get all user data of
+        """
+        query = """
+MATCH (u:User)-[r]->(related)
+LIMIT 100
+RETURN 
+    collect(DISTINCT {
+        id: id(u), 
+        type: labels(u)[0],
+        ip: CASE WHEN EXISTS((u)-[:HAS_IP]->(:IP)) THEN [(u)-[:HAS_IP]->(ip:IP) | ip.guid][0] ELSE null END,
+        location: CASE WHEN EXISTS((u)-[:HAS_CC]->(:Card)) THEN [(u)-[:HAS_CC]->(card:Card) | card.level][0] ELSE null END,
+        risk_factor: u.predictedProbability
+    }) + 
+    collect(DISTINCT {
+        id: id(related),
+        type: labels(related)[0],
+        ip: CASE WHEN EXISTS((related)-[:HAS_IP]->(:IP)) THEN [(related)-[:HAS_IP]->(ip:IP) | ip.guid][0] ELSE null END,
+        location: CASE WHEN EXISTS((related)-[:HAS_CC]->(:Card)) THEN [(related)-[:HAS_CC]->(card:Card) | card.level][0] ELSE null END,
+        risk_factor: related.predictedProbability
+    }) AS nodes,
+    collect(DISTINCT {
+        id: id(r), 
+        from: id(startNode(r)), 
+        to: id(endNode(r)), 
+        name: type(r)
+    }) AS relationships
+
+    """
+            
+        with self.driver.session(database="db3") as session:
+            result = session.run(query)
+            data = result.single()
+            print (data)
+            
+            formatted_data = {
+                "nodes": data["nodes"],
+                "relationships": data["relationships"]
+            }
+            
+            with open('test-dataaa-nums.json', "w") as file:
+                json.dump(formatted_data, file)
+        # driver.close()
+            return formatted_data
+
 
     def get_disconnected_wcc_groups(self):
         query = """

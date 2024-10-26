@@ -18,11 +18,21 @@ class LLMs:
         else:
             # create a chat completion
             openai.api_key = ""
-            collection = "collect(DISTINCT{id: id(u), ip: CASE WHEN EXISTS((u)-[:HAS_IP]->(:IP)) THEN [(u)-[:HAS_IP]->(ip:IP) | ip.guid][0] ELSE null END,location: CASE WHEN EXISTS((u)-[:HAS_CC]->(:Card)) THEN [(u)-[:HAS_CC]->(card:Card) | card.level][0] ELSE null END,risk_level: u.fraudMoneyTransfer}) AS nodes,collect(DISTINCT{id: id(r), from: id(startNode(r)), to: id(endNode(r)), name: type(r)}) AS relationships"
+            collection = "collect(DISTINCT {id: id(u), type: labels(u)[0],ip: CASE WHEN EXISTS((u)-[:HAS_IP]->(:IP)) THEN [(u)-[:HAS_IP]->(ip:IP) | ip.guid][0] ELSE null END,location: CASE WHEN EXISTS((u)-[:HAS_CC]->(:Card)) THEN [(u)-[:HAS_CC]->(card:Card) | card.level][0] ELSE null END,risk_factor: u.predictedProbability})+collect(DISTINCT {id: id(related),type: labels(related)[0],ip: CASE WHEN EXISTS((related)-[:HAS_IP]->(:IP)) THEN [(related)-[:HAS_IP]->(ip:IP) | ip.guid][0] ELSE null END,location: CASE WHEN EXISTS((related)-[:HAS_CC]->(:Card)) THEN [(related)-[:HAS_CC]->(card:Card) | card.level][0] ELSE null END,risk_factor: related.predictedProbability}) AS nodes,collect(DISTINCT {id: id(r), from: id(startNode(r)), to: id(endNode(r)), name: type(r)}) AS relationships"
             print(f"You are a neo4j expert. You are only to return cipher queries, without any explanation on the queries you return as your query will be passed directly to neo4j for execution. You are not allowed to delete or edit the database under any circumstance. Please use the following collections at the end of the query  {collection}. The following is the schema of the database {self.schema} Please generate a single cipher query to {user_prompt}")
             chat_completion = openai.ChatCompletion.create(model="gpt-4o", messages=[
-               {"role":"user","content":f"You are a neo4j expert. You are only to return cipher queries, without any explanation on the queries you return as your query will be passed directly to neo4j for execution. You are not allowed to delete or edit the database under any circumstance. Please use the following collections at the end of the query  {collection}. The following is the schema of the database {self.schema} Please generate a single cipher query to user_prompt. Please remember to always use the collection {collection} in your return statements!"}, {"role": "user", "content": user_prompt}])
+               {"role":"user","content":f"You are a neo4j expert. You are only to return cipher queries, without any explanation on the queries you return as your query will be passed directly to neo4j for execution. You are not allowed to delete or edit the database under any circumstance. Please use the following collections at the end of the query  {collection}. The following is the schema of the database {self.schema} Please generate a single cipher query to user_prompt. Please remember to always use the collection {collection} in your return statements! Always remember that the nodes and relationships being returned should be valid for the given query. Return the data of nodes on Both sides of the relationship"}, {"role": "user", "content": f"{user_prompt}. Always remember that the nodes and relationships being returned should be valid for the given query. Return the data of nodes on Both sides of the relationship"}])
             print(chat_completion)
             cleaned_query = self.clean_cypher_query(chat_completion.choices[0].message.content.strip('\n'))
         
         return cleaned_query
+
+    def summarize_the_graph(self,query:str,  graph:str):
+        """
+        Use an LLM to summarize a graph, given the schema of the graph, and a query which was run.
+        """
+        prompt = f"You are a neo4j and a graph data science expert. The following is the schema of the graph database {self.schema}. The following are the nodes, and relationships, of a graph from neo4j {graph} that were returned following the running of the Cypher query {query}. Keeping the schema, the response, and the cypher query in mind, can you please summarize the data for a business analyst?"        
+        chat_completion = openai.ChatCompletion.create(model="gpt-4o", messages=[
+               {"role":"user","content":prompt}])
+        response = chat_completion.choices[0].message.content.strip('\n')
+        return response

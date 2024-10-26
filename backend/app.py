@@ -1,3 +1,4 @@
+import json
 from flask import Flask,request
 from common.LLM import LLMs
 from common.neo4j_utils import Neo4jUtils
@@ -15,6 +16,10 @@ def index(methods=['GET','POST']):
     result = neo4jUtils.get_fraudlent_data()
     return result
 
+@app.route('/get_all_user_data')
+def get_user_data(methods=['GET','POST']):
+    result = neo4jUtils.get_all_user_data()
+    return result
 
 @app.route('/llm')
 def llm(methods=['GET','POST']):
@@ -26,9 +31,10 @@ def llm(methods=['GET','POST']):
     if userPrompt is None:
         return {"Error":"User prompt cannot be Empty"}
     else:
-        # cipher_query = llm.generate_cipher_query(user_prompt=userPrompt)
-        cipher_query = 'MATCH (u:User{guid: "aa39d3cbfb9f6ed0a48fcc6156bfb693"})-[r]-(n) RETURN u, r, n;'
+        cipher_query = llm.generate_cipher_query(user_prompt=userPrompt)
+        # cipher_query = 'MATCH (u:User{guid: "aa39d3cbfb9f6ed0a48fcc6156bfb693"})-[r]-(n) RETURN u, r, n;'
         results = neo4jUtils.execute_neo4j_query(query=cipher_query)
+        
         return results
 
 

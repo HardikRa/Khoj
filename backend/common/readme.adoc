@@ -1,5 +1,5 @@
 == Common folder
 
-This folder contains all code that is required as classes!
+This folder contains all code that is required for doing the magic!
 
 
