@@ -30,16 +30,12 @@ class Neo4jUtils:
         with self.driver.session(database="db3") as session:
             result = session.run(query)
             data = result.single()
-            print (data)
-            
+            print(data["nodes"])
+            # for record in data:
             formatted_data = {
-                "nodes": data.get("nodes",[]),
-                "relationships": data.get("relationships",[])
+                "nodes": data["nodes"],
+                "relationships": data["relationships"]
             }
-            
-        # driver.close()
-            with open('test-dataaa-num.json', "w") as file:
-                json.dump(formatted_data, file)
             return formatted_data
 
         
@@ -67,11 +63,13 @@ class Neo4jUtils:
         """
         pass
 
-    def get_data(self):
-        
+    def get_fraudlent_data(self):
+        """
+        Get fraudlent data of users.
+        """
         query = """
         MATCH (u:User)-[r]->(related)
-        WHERE u.predictedProbability > 0.8
+        WHERE u.predictedProbability > 0.8 LIMIT 100
         RETURN 
             collect(DISTINCT{
                 id: id(u), 
@@ -104,6 +102,4 @@ class Neo4jUtils:
             }
             
         # driver.close()
-            with open('test-dataaa-num.json', "w") as file:
-                json.dump(formatted_data, file)
             return formatted_data

@@ -10,13 +10,11 @@ CORS(app)
 
 neo4jUtils = Neo4jUtils('neo4j','p2ppassword','neo4j://10.1.210.104')
 
-@app.route('/fradulent_users')
+@app.route('/fraudulent_users')
 def index(methods=['GET','POST']):
-    query_type = request.args.get("filter")    
-    result = neo4jUtils.filter_fraudlent_users()
-    for res in result:
-        print(res.properties)
-    return 'Web App with Python Flask!'
+    result = neo4jUtils.get_fraudlent_data()
+    return result
+
 
 @app.route('/llm')
 def llm(methods=['GET','POST']):
@@ -28,7 +26,8 @@ def llm(methods=['GET','POST']):
     if userPrompt is None:
         return {"Error":"User prompt cannot be Empty"}
     else:
-        cipher_query = llm.generate_cipher_query(user_prompt=userPrompt)
+        # cipher_query = llm.generate_cipher_query(user_prompt=userPrompt)
+        cipher_query = 'MATCH (u:User{guid: "aa39d3cbfb9f6ed0a48fcc6156bfb693"})-[r]-(n) RETURN u, r, n;'
         results = neo4jUtils.execute_neo4j_query(query=cipher_query)
         return results
 
