@@ -18,6 +18,7 @@
         "particles.js": "^2.0.0",
         "react": "^18.3.1",
         "react-dom": "^18.3.1",
+        "react-particles": "^2.12.2",
         "react-router-dom": "^6.27.0",
         "react-scripts": "^5.0.1",
         "react-tsparticles": "^2.12.2",
@@ -25,6 +26,7 @@
         "tailwind-merge": "^2.5.4",
         "tailwindcss-animate": "^1.0.7",
         "tsparticles": "^3.5.0",
+        "tsparticles-slim": "^2.12.0",
         "web-vitals": "^2.1.4"
     },
     "scripts": {
